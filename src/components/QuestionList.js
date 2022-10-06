@@ -1,47 +1,46 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import QuestionItem from "./QuestionItem";
 
-//function QuestionList() {
 function QuestionList() {
-  const [questions, setQuestions] = React.useState([]);
-  function deleted(id) {
-    fetch(`http://localhost:4000/questions/${id}`, { method: "DELETE" })
-      .then(() => fetchData())
-  }
-  function handleChange(e,id) {
-    // console.log(e.target.value+" : question "+id);
-    fetch(`http://localhost:4000/questions/${id}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        "correctIndex": parseInt(e.target.value)
-      })
-    })
-  }
-  function fetchData() {
+  const [questions, setQuestions] = useState([]);
+  
+  useEffect(() => {
     fetch("http://localhost:4000/questions")
-      .then(resp => resp.json())
-      .then(result => {
-        setQuestions(result.map(que => 
-        <QuestionItem key={que.id} 
-        handleChange={handleChange}
-        question={que} 
-        deleted={deleted} />))
-      })
-  }
-  React.useEffect(() => fetchData(), []);
+    .then((res) => res.json())
+    .then(questions =>{
+      setQuestions(questions)
+      console.log(questions)
+    })
+  },[])
+  
+
+  const qweryItems =  questions.map((qwery)=>(
+     
+    <QuestionItem 
+    key={qwery.id}
+    question={qwery}
+    onDelete={handleDeleteItem}
+    />
+) )
+
+function handleDeleteItem(id){
+  // onDelete(id)
+  fetch(`http://localhost:4000/questions/${id}`, {
+    method: "DELETE",
+  })
+  .then((res) => res.json())
+  .then(() => {
+    const questionVar = questions.filter((question)=> question.id !== id)
+    setQuestions(questionVar)
+  })
+}
   return (
     <section>
       <h1>Quiz Questions</h1>
       <ul>{/* display QuestionItem components here after fetching */}</ul>
-      <ul>{/* display QuestionItem components here after fetching */}
-        {questions}
-      </ul>
+        {qweryItems}
     </section>
   );
 }
-
-  
-
 
 export default QuestionList;
